@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /products/{doc} {
+      allow read: if true;
+      // TEMP: open writes to enable admin panel without auth. Secure later.
+      allow create, update, delete: if true;
+    }
+
+    match /orders/{doc} {
+      allow read: if true;
+      // Allow customers to place orders and admin panel to manage them (no auth yet)
+      allow create: if true;
+      allow update, delete: if true;
+    }
+  }
+}
