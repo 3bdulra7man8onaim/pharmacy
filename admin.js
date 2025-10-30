@@ -727,4 +727,97 @@ document.addEventListener('DOMContentLoaded', () => {
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
 window.updateOrderStatus = updateOrderStatus;
-window.deleteOrder = deleteOrder;
+window.deleteOrder = deleteOrder;// =
+==== IMAGE UPLOAD FUNCTIONALITY =====
+
+// Product image upload
+document.addEventListener('DOMContentLoaded', () => {
+    const productImageFile = document.getElementById('productImageFile');
+    if (productImageFile) {
+        productImageFile.addEventListener('change', async (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+
+            try {
+                adminStore.showToast('جاري رفع صورة المنتج...', 'info');
+                
+                // Use the image upload function
+                const result = await window.uploadImageToImgBB(file);
+                
+                // Set the image URL in the form
+                const imageInput = document.getElementById('productImage');
+                if (imageInput) {
+                    imageInput.value = result.url;
+                    adminStore.showToast('تم رفع الصورة بنجاح!', 'success');
+                } else {
+                    throw new Error('لم يتم العثور على حقل رابط الصورة');
+                }
+                
+            } catch (err) {
+                console.error('Product image upload error:', err);
+                adminStore.showToast(`فشل رفع الصورة: ${err.message}`, 'error');
+            } finally {
+                e.target.value = '';
+            }
+        });
+    }
+
+    // Create poster upload button if it doesn't exist
+    let uploadPosterBtn = document.getElementById('uploadPosterBtn');
+    if (!uploadPosterBtn) {
+        // Add poster upload button to header
+        const navRight = document.querySelector('.nav-right') || document.querySelector('.admin-nav');
+        if (navRight) {
+            uploadPosterBtn = document.createElement('button');
+            uploadPosterBtn.id = 'uploadPosterBtn';
+            uploadPosterBtn.className = 'control-btn';
+            uploadPosterBtn.title = 'رفع بوستر تسويقي';
+            uploadPosterBtn.innerHTML = '🖼️';
+            navRight.appendChild(uploadPosterBtn);
+        }
+    }
+
+    // Create hidden file input if it doesn't exist
+    let posterFileInput = document.getElementById('posterFile');
+    if (!posterFileInput) {
+        posterFileInput = document.createElement('input');
+        posterFileInput.type = 'file';
+        posterFileInput.id = 'posterFile';
+        posterFileInput.accept = 'image/*';
+        posterFileInput.style.display = 'none';
+        document.body.appendChild(posterFileInput);
+    }
+    
+    if (uploadPosterBtn && posterFileInput) {
+        uploadPosterBtn.addEventListener('click', () => posterFileInput.click());
+        
+        posterFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+
+            try {
+                adminStore.showToast('جاري رفع البوستر التسويقي...', 'info');
+                
+                // Use the image upload function
+                const result = await window.uploadImageToImgBB(file);
+                
+                // Save poster to localStorage for client app
+                const posterData = {
+                    url: result.url,
+                    updatedAt: new Date().toISOString(),
+                    filename: file.name,
+                    hidden: false
+                };
+                localStorage.setItem('pharmacy-marketing-poster', JSON.stringify(posterData));
+                
+                adminStore.showToast('تم رفع البوستر بنجاح!', 'success');
+                
+            } catch (err) {
+                console.error('Poster upload error:', err);
+                adminStore.showToast(`فشل رفع البوستر: ${err.message}`, 'error');
+            } finally {
+                e.target.value = '';
+            }
+        });
+    }
+});

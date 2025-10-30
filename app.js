@@ -1226,4 +1226,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Export store for global access
 window.store = store;
-window.scrollToProducts = scrollToProducts;
+window.scrollToProducts = scrollToProducts;// =
+==== MARKETING POSTER FUNCTIONALITY =====
+
+// Load marketing poster from localStorage
+function loadMarketingPoster() {
+    try {
+        const posterData = JSON.parse(localStorage.getItem('pharmacy-marketing-poster') || '{}');
+        
+        if (posterData.url && !posterData.hidden) {
+            let banner = document.getElementById('marketingBanner');
+            
+            // Create banner if it doesn't exist
+            if (!banner) {
+                banner = document.createElement('section');
+                banner.id = 'marketingBanner';
+                banner.className = 'marketing-banner';
+                banner.style.cssText = `
+                    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+                    padding: 0;
+                    margin: 20px 0;
+                    border-radius: 15px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                `;
+                
+                const heroSection = document.querySelector('.hero');
+                if (heroSection) {
+                    heroSection.parentNode.insertBefore(banner, heroSection.nextSibling);
+                }
+            }
+            
+            banner.innerHTML = `
+                <div class="container">
+                    <div class="marketing-banner-inner" style="position: relative; display: flex; align-items: center; justify-content: center; min-height: 200px;">
+                        <img src="${posterData.url}" alt="العرض التسويقي" 
+                             style="width: 100%; height: auto; max-height: 400px; object-fit: cover; border-radius: 15px; transition: transform 0.3s ease;"
+                             onload="this.parentElement.parentElement.parentElement.style.display='block'"
+                             onerror="this.parentElement.parentElement.parentElement.style.display='none'">
+                    </div>
+                </div>
+            `;
+            
+            banner.style.display = 'block';
+            console.log('✅ Marketing poster loaded successfully');
+        } else {
+            // Hide banner if no poster or poster is hidden
+            const banner = document.getElementById('marketingBanner');
+            if (banner) banner.style.display = 'none';
+        }
+    } catch (error) {
+        console.log('No marketing poster configured:', error);
+        const banner = document.getElementById('marketingBanner');
+        if (banner) banner.style.display = 'none';
+    }
+}
+
+// Load poster on page load and periodically check for updates
+document.addEventListener('DOMContentLoaded', () => {
+    loadMarketingPoster();
+    
+    // Check for poster updates every 30 seconds
+    setInterval(loadMarketingPoster, 30000);
+});
