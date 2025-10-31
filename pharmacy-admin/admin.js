@@ -188,6 +188,49 @@ class AdminStore {
 // Initialize admin store
 const adminStore = new AdminStore();
 
+// Cloudinary fallback config (uses your Cloudinary; no secret needed – unsigned preset)
+const CLOUDINARY = (() => {
+    const saved = JSON.parse(localStorage.getItem('cloudinary-config') || 'null');
+    return saved || { cloudName: 'demlpfxfo', uploadPreset: 'pharmacy_unsigned' };
+})();
+
+function saveCloudinaryConfig(cfg){
+    localStorage.setItem('cloudinary-config', JSON.stringify(cfg));
+}
+
+async function uploadProductImage(file, onStatus) {
+    // Try Firebase Storage first if available
+    try {
+        if (firebase && firebase.storage) {
+            onStatus && onStatus('جاري الرفع عبر Firebase...');
+            const path = `products/${Date.now()}-${file.name}`;
+            const ref = firebase.storage().ref().child(path);
+            await ref.put(file, { contentType: file.type });
+            const url = await ref.getDownloadURL();
+            return url;
+        }
+    } catch (e) {
+        console.warn('Firebase Storage upload failed, will try Cloudinary:', e);
+    }
+
+    // Fallback: Cloudinary unsigned upload
+    if (CLOUDINARY.cloudName && CLOUDINARY.uploadPreset) {
+        onStatus && onStatus('جاري الرفع عبر Cloudinary...');
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('upload_preset', CLOUDINARY.uploadPreset);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/upload`, {
+            method: 'POST',
+            body: fd
+        });
+        if (!res.ok) throw new Error('Cloudinary upload failed');
+        const data = await res.json();
+        return data.secure_url || data.url;
+    }
+
+    throw new Error('لم يتم تفعيل Firebase Storage ولا بيانات Cloudinary متاحة');
+}
+
 // ===== UI MANAGEMENT =====
 
 // Login Management
@@ -197,14 +240,19 @@ async function handleLogin(event) {
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value.trim();
     
+    console.log('Login attempt:', { username, password: password ? 'entered' : 'empty' });
+    console.log('Expected:', { username: adminStore.credentials.username, password: adminStore.credentials.password });
+    
     if (adminStore.login(username, password)) {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminDashboard').style.display = 'grid';
         
-        // Start realtime listeners
-        await loadProductsFromFirestore();
-        listenOrdersFromFirestore();
+        // Load data and update UI
+        renderProducts();
+        renderOrders();
         updateStatistics();
+        
+        adminStore.showToast('مرحباً بك في لوحة التحكم', 'success');
     } else {
         adminStore.showToast('اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
     }
@@ -246,8 +294,13 @@ function showSection(sectionName) {
         case 'orders':
             renderOrders();
             break;
+        case 'poster':
+            initializePosterManagement();
+            break;
         case 'statistics':
             updateStatistics();
+            updateTopProducts();
+            updateRecentOrders();
             break;
     }
 }
@@ -448,17 +501,21 @@ async function deleteProduct(id) {
 // Real-time orders listener
 function listenOrdersFromFirestore() {
     if (typeof db === 'undefined') return;
-    db.collection('orders').onSnapshot((snapshot) => {
+    db.collection('orders')
+      .orderBy('createdAt', 'desc')
+      .onSnapshot((snapshot) => {
         adminStore.orders = [];
         snapshot.forEach(doc => {
             adminStore.orders.push({ id: doc.id, ...doc.data() });
         });
         renderOrders();
         updateStatistics();
-    }, (error) => {
+      }, (error) => {
         console.error('Error listening orders:', error);
-    });
+      });
 }
+
+function formatCurrency(v){return `${v} جنيه`;}
 
 function renderOrders() {
     const ordersList = document.getElementById('ordersList');
@@ -481,10 +538,16 @@ function renderOrders() {
         `;
         return;
     }
+
+    const sorted = [...filteredOrders].sort((a,b) => {
+        const da = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : Date.parse(a.createdAt || 0);
+        const db = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : Date.parse(b.createdAt || 0);
+        return db - da;
+    });
     
-    ordersList.innerHTML = filteredOrders
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .map(order => `
+    ordersList.innerHTML = sorted.map(order => {
+        const createdAt = order.createdAt && order.createdAt.toDate ? order.createdAt.toDate() : (order.createdAt ? new Date(order.createdAt) : new Date());
+        return `
             <div class="order-card">
                 <div class="order-header">
                     <div class="order-id">طلب #${order.id}</div>
@@ -506,14 +569,15 @@ function renderOrders() {
                         <div><strong>الهاتف:</strong> ${order.customerPhone}</div>
                         <div><strong>المنتج:</strong> ${order.productName}</div>
                         <div><strong>الكمية:</strong> ${order.quantity}</div>
-                        <div><strong>السعر الإجمالي:</strong> ${order.totalPrice} جنيه</div>
+                        <div><strong>السعر الإجمالي:</strong> ${formatCurrency(order.totalPrice || 0)}</div>
                         <div><strong>العنوان:</strong> ${order.address}</div>
                         ${order.location ? `<div><strong>الموقع:</strong> <a href="${order.location}" target="_blank">عرض على الخريطة</a></div>` : ''}
-                        <div><strong>تاريخ الطلب:</strong> ${new Date(order.createdAt).toLocaleString('ar-EG')}</div>
+                        <div><strong>تاريخ الطلب:</strong> ${createdAt.toLocaleString('ar-EG')}</div>
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+    }).join('');
 }
 
 function getStatusDisplayName(status) {
@@ -546,12 +610,23 @@ function deleteOrder(orderId) {
 
 // Statistics
 function updateStatistics() {
-    const stats = adminStore.getStatistics();
-    
-    document.getElementById('totalProducts').textContent = stats.totalProducts;
-    document.getElementById('totalOrders').textContent = stats.totalOrders;
-    document.getElementById('deliveredOrders').textContent = stats.deliveredOrders;
-    document.getElementById('pendingOrders').textContent = stats.pendingOrders;
+    const totalProducts = adminStore.products.length;
+    const totalOrders = adminStore.orders.length;
+    const pendingOrders = adminStore.orders.filter(o => o.status === 'pending').length;
+    const deliveredOrders = adminStore.orders.filter(o => o.status === 'delivered').length;
+    const totalRevenue = adminStore.orders
+        .filter(o => o.status === 'delivered')
+        .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+
+    const el = (id) => document.getElementById(id);
+    if (el('totalProducts')) el('totalProducts').textContent = totalProducts;
+    if (el('totalOrders')) el('totalOrders').textContent = totalOrders;
+    if (el('deliveredOrders')) el('deliveredOrders').textContent = deliveredOrders;
+    if (el('pendingOrders')) el('pendingOrders').textContent = pendingOrders;
+
+    // Optional: attach revenue if element exists later
+    const revenueEl = el('totalRevenue');
+    if (revenueEl) revenueEl.textContent = formatCurrency(totalRevenue);
 }
 
 // Password Change
@@ -674,6 +749,34 @@ document.addEventListener('DOMContentLoaded', () => {
     if (changePasswordForm) {
         changePasswordForm.addEventListener('submit', handlePasswordChange);
     }
+
+    // Image upload
+    const uploadBtn = document.getElementById('uploadImageBtn');
+    const imageFileInput = document.getElementById('productImageFile');
+    if (uploadBtn && imageFileInput) {
+        uploadBtn.addEventListener('click', async () => {
+            const file = imageFileInput.files && imageFileInput.files[0];
+            const statusEl = document.getElementById('imageUploadStatus');
+            if (!file) {
+                adminStore.showToast('اختر صورة أولاً', 'error');
+                return;
+            }
+            try {
+                uploadBtn.disabled = true;
+                statusEl.textContent = 'جاري الرفع...';
+                const url = await uploadProductImage(file, (s) => statusEl.textContent = s);
+                document.getElementById('productImage').value = url;
+                statusEl.textContent = 'تم الرفع ✔';
+                adminStore.showToast('تم رفع الصورة بنجاح', 'success');
+            } catch (e) {
+                console.error('Image upload error:', e);
+                statusEl.textContent = 'فشل الرفع';
+                adminStore.showToast(e.message || 'فشل رفع الصورة', 'error');
+            } finally {
+                uploadBtn.disabled = false;
+            }
+        });
+    }
     
     // Modal overlay
     const modalOverlay = document.getElementById('modalOverlay');
@@ -727,97 +830,189 @@ document.addEventListener('DOMContentLoaded', () => {
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
 window.updateOrderStatus = updateOrderStatus;
-window.deleteOrder = deleteOrder;// =
-==== IMAGE UPLOAD FUNCTIONALITY =====
+window.deleteOrder = deleteOrder;// ====
+= POSTER MANAGEMENT =====
 
-// Product image upload
-document.addEventListener('DOMContentLoaded', () => {
-    const productImageFile = document.getElementById('productImageFile');
-    if (productImageFile) {
-        productImageFile.addEventListener('change', async (e) => {
-            const file = e.target.files && e.target.files[0];
-            if (!file) return;
-
-            try {
-                adminStore.showToast('جاري رفع صورة المنتج...', 'info');
-                
-                // Use the image upload function
-                const result = await window.uploadImageToImgBB(file);
-                
-                // Set the image URL in the form
-                const imageInput = document.getElementById('productImage');
-                if (imageInput) {
-                    imageInput.value = result.url;
-                    adminStore.showToast('تم رفع الصورة بنجاح!', 'success');
-                } else {
-                    throw new Error('لم يتم العثور على حقل رابط الصورة');
-                }
-                
-            } catch (err) {
-                console.error('Product image upload error:', err);
-                adminStore.showToast(`فشل رفع الصورة: ${err.message}`, 'error');
-            } finally {
-                e.target.value = '';
+// Poster Management
+function initializePosterManagement() {
+    const selectPosterBtn = document.getElementById('selectPosterBtn');
+    const posterFileInput = document.getElementById('posterFileInput');
+    const uploadPosterBtn = document.getElementById('uploadPosterBtn');
+    const deletePosterBtn = document.getElementById('deletePosterBtn');
+    
+    let selectedFile = null;
+    
+    // Load existing poster
+    loadExistingPoster();
+    
+    // Select poster file
+    if (selectPosterBtn && posterFileInput) {
+        selectPosterBtn.addEventListener('click', () => {
+            posterFileInput.click();
+        });
+        
+        posterFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                previewPoster(file);
+                uploadPosterBtn.style.display = 'inline-block';
             }
         });
     }
-
-    // Create poster upload button if it doesn't exist
-    let uploadPosterBtn = document.getElementById('uploadPosterBtn');
-    if (!uploadPosterBtn) {
-        // Add poster upload button to header
-        const navRight = document.querySelector('.nav-right') || document.querySelector('.admin-nav');
-        if (navRight) {
-            uploadPosterBtn = document.createElement('button');
-            uploadPosterBtn.id = 'uploadPosterBtn';
-            uploadPosterBtn.className = 'control-btn';
-            uploadPosterBtn.title = 'رفع بوستر تسويقي';
-            uploadPosterBtn.innerHTML = '🖼️';
-            navRight.appendChild(uploadPosterBtn);
-        }
-    }
-
-    // Create hidden file input if it doesn't exist
-    let posterFileInput = document.getElementById('posterFile');
-    if (!posterFileInput) {
-        posterFileInput = document.createElement('input');
-        posterFileInput.type = 'file';
-        posterFileInput.id = 'posterFile';
-        posterFileInput.accept = 'image/*';
-        posterFileInput.style.display = 'none';
-        document.body.appendChild(posterFileInput);
-    }
     
-    if (uploadPosterBtn && posterFileInput) {
-        uploadPosterBtn.addEventListener('click', () => posterFileInput.click());
-        
-        posterFileInput.addEventListener('change', async (e) => {
-            const file = e.target.files && e.target.files[0];
-            if (!file) return;
-
+    // Upload poster
+    if (uploadPosterBtn) {
+        uploadPosterBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            
             try {
-                adminStore.showToast('جاري رفع البوستر التسويقي...', 'info');
+                adminStore.showToast('جاري رفع البوستر...', 'info');
                 
-                // Use the image upload function
-                const result = await window.uploadImageToImgBB(file);
+                const imageUrl = await window.uploadImage(selectedFile);
                 
-                // Save poster to localStorage for client app
+                // Save poster data
                 const posterData = {
-                    url: result.url,
-                    updatedAt: new Date().toISOString(),
-                    filename: file.name,
-                    hidden: false
+                    url: imageUrl,
+                    filename: selectedFile.name,
+                    uploadDate: new Date().toISOString(),
+                    size: selectedFile.size
                 };
-                localStorage.setItem('pharmacy-marketing-poster', JSON.stringify(posterData));
+                
+                localStorage.setItem('pharmacy-poster', JSON.stringify(posterData));
+                
+                // Update UI
+                showPosterPreview(imageUrl);
+                updatePosterInfo(posterData);
                 
                 adminStore.showToast('تم رفع البوستر بنجاح!', 'success');
                 
-            } catch (err) {
-                console.error('Poster upload error:', err);
-                adminStore.showToast(`فشل رفع البوستر: ${err.message}`, 'error');
-            } finally {
-                e.target.value = '';
+                uploadPosterBtn.style.display = 'none';
+                deletePosterBtn.style.display = 'inline-block';
+                
+            } catch (error) {
+                adminStore.showToast('فشل رفع البوستر: ' + error.message, 'error');
             }
         });
     }
-});
+    
+    // Delete poster
+    if (deletePosterBtn) {
+        deletePosterBtn.addEventListener('click', () => {
+            if (confirm('هل أنت متأكد من حذف البوستر؟')) {
+                localStorage.removeItem('pharmacy-poster');
+                resetPosterUI();
+                adminStore.showToast('تم حذف البوستر', 'success');
+            }
+        });
+    }
+}
+
+// Preview selected poster
+function previewPoster(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        showPosterPreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+}
+
+// Show poster preview
+function showPosterPreview(imageUrl) {
+    const posterPreview = document.getElementById('posterPreview');
+    if (posterPreview) {
+        posterPreview.innerHTML = `<img src="${imageUrl}" alt="البوستر التسويقي">`;
+    }
+}
+
+// Load existing poster
+function loadExistingPoster() {
+    const posterData = JSON.parse(localStorage.getItem('pharmacy-poster') || '{}');
+    if (posterData.url) {
+        showPosterPreview(posterData.url);
+        updatePosterInfo(posterData);
+        const deletePosterBtn = document.getElementById('deletePosterBtn');
+        if (deletePosterBtn) deletePosterBtn.style.display = 'inline-block';
+    }
+}
+
+// Update poster info
+function updatePosterInfo(posterData) {
+    const posterDetails = document.getElementById('posterDetails');
+    if (posterDetails) {
+        const uploadDate = new Date(posterData.uploadDate).toLocaleDateString('ar-EG');
+        const fileSize = (posterData.size / 1024).toFixed(2);
+        
+        posterDetails.innerHTML = `
+            <p><strong>اسم الملف:</strong> ${posterData.filename}</p>
+            <p><strong>تاريخ الرفع:</strong> ${uploadDate}</p>
+            <p><strong>حجم الملف:</strong> ${fileSize} KB</p>
+            <p><strong>الحالة:</strong> <span style="color: var(--success-color)">نشط</span></p>
+        `;
+    }
+}
+
+// Reset poster UI
+function resetPosterUI() {
+    const posterPreview = document.getElementById('posterPreview');
+    const posterDetails = document.getElementById('posterDetails');
+    
+    if (posterPreview) {
+        posterPreview.innerHTML = `
+            <div class="upload-placeholder">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>ارفع البوستر التسويقي</h3>
+                <p>اضغط هنا أو اسحب الصورة</p>
+                <button id="selectPosterBtn" class="upload-btn">اختيار صورة</button>
+            </div>
+        `;
+    }
+    
+    if (posterDetails) {
+        posterDetails.innerHTML = '<p>لا يوجد بوستر حالياً</p>';
+    }
+    
+    const uploadPosterBtn = document.getElementById('uploadPosterBtn');
+    const deletePosterBtn = document.getElementById('deletePosterBtn');
+    if (uploadPosterBtn) uploadPosterBtn.style.display = 'none';
+    if (deletePosterBtn) deletePosterBtn.style.display = 'none';
+    
+    // Re-initialize poster management
+    setTimeout(initializePosterManagement, 100);
+}
+
+// ===== ENHANCED STATISTICS =====
+
+// Update top products
+function updateTopProducts() {
+    const topProductsEl = document.getElementById('topProducts');
+    if (!topProductsEl) return;
+    
+    if (adminStore.products.length === 0) {
+        topProductsEl.innerHTML = '<p>لا توجد منتجات بعد</p>';
+        return;
+    }
+    
+    // Show first 5 products as placeholder
+    const topProducts = adminStore.products.slice(0, 5);
+    topProductsEl.innerHTML = topProducts.map(product => `
+        <div class="product-item">
+            <span class="product-name">${product.name}</span>
+            <span class="product-sales">${product.price} جنيه</span>
+        </div>
+    `).join('');
+}
+
+// Update recent orders
+function updateRecentOrders() {
+    const recentOrdersEl = document.getElementById('recentOrders');
+    if (!recentOrdersEl) return;
+    
+    if (adminStore.orders.length === 0) {
+        recentOrdersEl.innerHTML = '<p>لا توجد طلبات حديثة</p>';
+        return;
+    }
+    
+    // Placeholder for recent orders
+    recentOrdersEl.innerHTML = '<p>لا توجد طلبات حديثة</p>';
+}

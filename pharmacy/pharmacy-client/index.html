@@ -1,521 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صيدلية هشام - الدكتور أحمد هشام</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>">
-</head>
-<body>
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen">
-        <div class="loading-content">
-            <div class="pharmacy-logo">
-                <i class="fas fa-prescription-bottle-alt"></i>
-            </div>
-            <div class="loading-text">صيدلية هشام</div>
-            <div class="loading-bar">
-                <div class="loading-progress"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <!-- Logo -->
-                <div class="logo-section">
-                    <div class="logo-icon">💊</div>
-                    <div class="logo-text">
-                        <div class="brand-name">صيدلية هشام</div>
-                        <div class="brand-tagline">خدمة طبية متميزة</div>
-                    </div>
-                </div>
-
-                <!-- Desktop Navigation -->
-                <div class="desktop-nav">
-                    <!-- Search -->
-                    <div class="search-container">
-                        <input type="text" id="searchInput" placeholder="ابحث عن دواء أو منتج..." class="search-input">
-                        <i class="fas fa-search search-icon"></i>
-                    </div>
-
-                    <!-- Quick Actions -->
-                    <div class="quick-actions">
-                        <button class="action-btn location-btn" title="الموقع">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </button>
-                        
-                        <button id="darkModeToggle" class="action-btn theme-toggle" title="تغيير الوضع">
-                            <i class="fas fa-moon"></i>
-                            <i class="fas fa-sun"></i>
-                        </button>
-
-                        <button id="langToggle" class="action-btn" title="English / العربية">
-                            <span id="langToggleText">EN</span>
-                        </button>
-
-                        <a href="https://wa.me/201006273308" target="_blank" class="action-btn whatsapp-btn" title="واتساب">
-                            <i class="fas fa-phone"></i>
-                        </a>
-
-                        <button id="cartToggle" class="action-btn cart-btn" title="السلة">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span id="cartCount" class="cart-count">0</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Mobile Menu Button -->
-                <button class="mobile-menu-btn" id="mobileMenuToggle">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-
-            <!-- Mobile Menu -->
-            <div class="mobile-menu" id="mobileMenu">
-                <div class="mobile-search">
-                    <input type="text" id="mobileSearchInput" placeholder="ابحث عن دواء أو منتج..." class="search-input">
-                    <i class="fas fa-search search-icon"></i>
-                </div>
-                
-                <div class="mobile-actions">
-                    <button class="mobile-action-btn">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>الموقع</span>
-                    </button>
-                    
-                    <button class="mobile-action-btn" id="mobileCartToggle">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>السلة (<span id="mobileCartCount">0</span>)</span>
-                    </button>
-                    
-                    <a href="https://wa.me/201006273308" target="_blank" class="mobile-action-btn">
-                        <i class="fas fa-phone"></i>
-                        <span>اتصل بنا</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-background">
-            <div class="floating-element floating-1"></div>
-            <div class="floating-element floating-2"></div>
-            <div class="floating-element floating-3"></div>
-            <div class="floating-element floating-4"></div>
-        </div>
-        
-        <div class="container">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <!-- Badge -->
-                    <div class="hero-badge">
-                        <i class="fas fa-star"></i>
-                        <span>صيدلية معتمدة</span>
-                    </div>
-
-                    <!-- Main Title -->
-                    <h1 class="hero-title">
-                        <span class="main-title">صيدلية هشام</span>
-                        <span class="sub-title">الدكتور أحمد هشام</span>
-                    </h1>
-
-                    <!-- Description -->
-                    <p class="hero-description">
-                        نقدم لك أفضل الأدوية والمنتجات الطبية عالية الجودة مع خدمة عملاء متميزة وضمان الجودة. صحتك هي أولويتنا الأولى.
-                    </p>
-
-                    <!-- Features -->
-                    <div class="hero-features">
-                        <div class="feature-card">
-                            <div class="feature-icon delivery">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="feature-text">
-                                <span class="feature-title">التوصيل مجاني</span>
-                                <span class="feature-subtitle">لجميع الطلبات</span>
-                            </div>
-                        </div>
-
-                        <div class="feature-card">
-                            <div class="feature-icon quality">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <div class="feature-text">
-                                <span class="feature-title">منتجات أصلية</span>
-                                <span class="feature-subtitle">مضمونة 100%</span>
-                            </div>
-                        </div>
-
-                        <div class="feature-card">
-                            <div class="feature-icon support">
-                                <i class="fas fa-heart"></i>
-                            </div>
-                            <div class="feature-text">
-                                <span class="feature-title">خدمة 24/7</span>
-                                <span class="feature-subtitle">دائماً في خدمتك</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- CTA Buttons -->
-                    <div class="hero-buttons">
-                        <button class="btn btn-primary" onclick="scrollToProducts()">
-                            <i class="fas fa-pills"></i>
-                            تسوق الآن
-                            <i class="fas fa-arrow-left"></i>
-                        </button>
-                        
-                        <button class="btn btn-secondary">
-                            تحدث مع الصيدلي
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Hero Visual -->
-                <div class="hero-visual">
-                    <div class="doctor-icon">👨‍⚕️</div>
-                    
-                    <!-- Floating Pills -->
-                    <div class="floating-pill pill-1">
-                        <i class="fas fa-pills"></i>
-                    </div>
-                    <div class="floating-pill pill-2">
-                        <i class="fas fa-heart"></i>
-                    </div>
-                    <div class="floating-pill pill-3">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div class="floating-pill pill-4">
-                        <i class="fas fa-clock"></i>
-                    </div>
-
-                    <!-- Stats Cards -->
-                    <div class="stat-card stat-1">
-                        <div class="stat-number">98.5%</div>
-                        <div class="stat-label">رضا العملاء</div>
-                    </div>
-                    
-                    <div class="stat-card stat-2">
-                        <div class="stat-number">24/7</div>
-                        <div class="stat-label">خدمة العملاء</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Scroll Indicator -->
-        <div class="scroll-indicator" onclick="scrollToProducts()">
-            <div class="scroll-text">اكتشف المنتجات</div>
-            <div class="scroll-mouse">
-                <div class="scroll-wheel"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Products Section -->
-    <main id="products" class="products-section">
-        <!-- Categories -->
-        <section class="categories-section">
-            <div class="container">
-                <div class="categories-header">
-                    <h2 class="section-title">تصفح حسب الفئة</h2>
-                    <p class="section-subtitle">اختر الفئة المناسبة لاحتياجاتك الطبية</p>
-                </div>
-                
-                <div class="categories-grid" id="categoriesGrid">
-                    <!-- Categories will be populated by JavaScript -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Products Grid -->
-        <section class="products-grid-section">
-            <div class="container">
-                <div class="products-header">
-                    <div class="products-title-section">
-                        <h2 class="section-title">منتجاتنا</h2>
-                        <p class="section-subtitle">أفضل الأدوية والمنتجات الطبية</p>
-                    </div>
-                    
-                    <div class="products-filters">
-                        <div class="filter-group">
-                            <label for="sortSelect">ترتيب حسب:</label>
-                            <select id="sortSelect" class="sort-select">
-                                <option value="name">الاسم</option>
-                                <option value="price-low">السعر: من الأقل للأعلى</option>
-                                <option value="price-high">السعر: من الأعلى للأقل</option>
-                                <option value="rating">التقييم</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="products-grid" id="productsGrid">
-                    <!-- Products will be populated by JavaScript -->
-                </div>
-                
-                <div class="loading-spinner" id="loadingSpinner">
-                    <div class="spinner"></div>
-                    <p>جاري تحميل المنتجات...</p>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Shopping Cart Drawer -->
-    <div class="cart-overlay" id="cartOverlay"></div>
-    <div class="shopping-cart" id="shoppingCart">
-        <div class="cart-header">
-            <h3 class="cart-title">
-                <i class="fas fa-shopping-cart"></i>
-                سلة التسوق
-            </h3>
-            <button class="cart-close" id="cartClose">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="cart-content">
-            <div class="cart-items" id="cartItems">
-                <!-- Cart items will be populated by JavaScript -->
-            </div>
-            
-            <div class="cart-empty" id="cartEmpty">
-                <div class="empty-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <h4>السلة فارغة</h4>
-                <p>أضف بعض المنتجات لتبدأ التسوق</p>
-            </div>
-        </div>
-        
-        <div class="cart-footer" id="cartFooter">
-            <div class="cart-total">
-                <div class="total-row">
-                    <span>المجموع الفرعي:</span>
-                    <span id="cartSubtotal">0 جنيه</span>
-                </div>
-                <div class="total-row">
-                    <span>التوصيل:</span>
-                    <span class="free-delivery">مجاني</span>
-                </div>
-                <div class="total-row total-final">
-                    <span>المجموع الكلي:</span>
-                    <span id="cartTotal">0 جنيه</span>
-                </div>
-            </div>
-            
-            <div class="cart-actions">
-                <button class="btn btn-secondary" id="clearCart">
-                    <i class="fas fa-trash"></i>
-                    إفراغ السلة
-                </button>
-                <a href="https://wa.me/201006273308" target="_blank" class="btn btn-primary">
-                    <i class="fas fa-phone"></i>
-                    إتمام الطلب
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Floating Chat Button -->
-    <button id="floatingChatBtn" class="floating-chat-btn" title="تحدث معنا">
-        <i class="fas fa-comments"></i>
-        <div class="notification-badge"></div>
-    </button>
-
-    <!-- WhatsApp Order Modal -->
-    <div class="modal-overlay" id="whatsappOrderOverlay"></div>
-    <div class="whatsapp-order-modal" id="whatsappOrderModal">
-        <div class="modal-header">
-            <h3 class="modal-title">
-                <i class="fab fa-whatsapp"></i>
-                طلب عبر الواتساب
-            </h3>
-            <button class="modal-close" id="closeWhatsappModal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="modal-content">
-            <!-- Product Info -->
-            <div class="order-product-info" id="orderProductInfo">
-                <div class="product-image-container">
-                    <img id="orderProductImage" src="" alt="Product Image" class="order-product-image">
-                </div>
-                <div class="product-details">
-                    <h4 id="orderProductName" class="product-name"></h4>
-                    <p id="orderProductCategory" class="product-category"></p>
-                    <div class="product-price">
-                        <span id="orderProductPrice" class="current-price"></span>
-                        <span id="orderProductOriginalPrice" class="original-price"></span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Order Form -->
-            <form id="whatsappOrderForm" class="order-form">
-                <div class="form-group">
-                    <label for="customerName">
-                        <i class="fas fa-user"></i>
-                        الاسم الكامل *
-                    </label>
-                    <input type="text" id="customerName" name="customerName" required 
-                           placeholder="أدخل اسمك الكامل">
-                </div>
-                
-                <div class="form-group">
-                    <label for="customerPhone">
-                        <i class="fas fa-phone"></i>
-                        رقم الهاتف *
-                    </label>
-                    <input type="tel" id="customerPhone" name="customerPhone" required 
-                           placeholder="" pattern="[0-9]{11}">
-                </div>
-                
-                <div class="form-group">
-                    <label for="productQuantity">
-                        <i class="fas fa-sort-numeric-up"></i>
-                        الكمية المطلوبة *
-                    </label>
-                    <div class="quantity-input-container">
-                        <button type="button" class="quantity-btn decrease" onclick="changeQuantity(-1)">
-                            <i class="fas fa-minus"></i>
-                        </button>
-                        <input type="number" id="productQuantity" name="productQuantity" 
-                               value="1" min="1" max="99" required>
-                        <button type="button" class="quantity-btn increase" onclick="changeQuantity(1)">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="customerAddress">
-                        <i class="fas fa-map-marker-alt"></i>
-                        العنوان *
-                    </label>
-                    <div class="address-container">
-                        <textarea id="customerAddress" name="customerAddress" required 
-                                  rows="3" placeholder="اكتب عنوانك التفصيلي هنا..."></textarea>
-                        <button type="button" id="getLocationBtn" class="location-btn">
-                            <i class="fas fa-location-arrow"></i>
-                            <span>تحديد موقعي</span>
-                        </button>
-                    </div>
-                    <div id="locationStatus" class="location-status"></div>
-                </div>
-                
-                <!-- Order Summary -->
-                <div class="order-summary">
-                    <div class="summary-row">
-                        <span>سعر الوحدة:</span>
-                        <span id="unitPrice">0 جنيه</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>الكمية:</span>
-                        <span id="summaryQuantity">1</span>
-                    </div>
-                    <div class="summary-row total-row">
-                        <span>المجموع:</span>
-                        <span id="totalPrice">0 جنيه</span>
-                    </div>
-                    <div class="delivery-note">
-                        <i class="fas fa-truck"></i>
-                        <span>التوصيل مجاني لجميع الطلبات!</span>
-                    </div>
-                </div>
-                
-                <button type="submit" class="whatsapp-submit-btn">
-                    <i class="fab fa-whatsapp"></i>
-                    إرسال الطلب عبر الواتساب
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Toast Notifications -->
-    <div id="toast" class="toast"></div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-brand">
-                        <i class="fas fa-prescription-bottle-alt"></i>
-                        <div class="brand-text">
-                            <h3>صيدلية هشام</h3>
-                            <span>الدكتور أحمد هشام</span>
-                        </div>
-                    </div>
-                    <p>نقدم لك أفضل الخدمات الطبية والصيدلانية مع التوصيل المجاني لجميع أنحاء الجمهورية.</p>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>تواصل معنا</h4>
-                    <div class="contact-info">
-                        <div class="contact-item">
-                            <i class="fas fa-phone"></i>
-                            <span>01006273308</span>
-                        </div>
-                        <div class="contact-item">
-                            <i class="fab fa-whatsapp"></i>
-                            <span>واتساب: 01006273308</span>
-                        </div>
-                        <div class="contact-item">
-                            <i class="fas fa-clock"></i>
-                            <span>متاحون 24/7</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>خدماتنا</h4>
-                    <ul class="services-list">
-                        <li><i class="fas fa-check"></i> استشارات طبية</li>
-                        <li><i class="fas fa-check"></i> توصيل مجاني</li>
-                        <li><i class="fas fa-check"></i> منتجات أصلية</li>
-                        <li><i class="fas fa-check"></i> خدمة عملاء متميزة</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2024 صيدلية هشام. جميع الحقوق محفوظة.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    
-    <script>
-        // Initialize Firebase for Client
-        const firebaseConfig = {
-            apiKey: "AIzaSyBsOmPIoAbsPTI8WwX8TrnTY01hv6UhcX8",
-            authDomain: "pharmacy-admin-2ff91.firebaseapp.com",
-            projectId: "pharmacy-admin-2ff91",
-            storageBucket: "pharmacy-admin-2ff91.firebasestorage.app",
-            messagingSenderId: "809512854347",
-            appId: "1:809512854347:web:a7294d8e77c7f138f83ece"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-    </script>
-    
-    <script src="app.js"></script>
-</body>
-</html>

@@ -148,22 +148,77 @@
                             <p>طلبات مكتملة</p>
                         </div>
                     </div>
+="btn btn-danger" style="display: none;">
+                            <i class="fas fa-trash"></i>
+                            حذف البوستر
+                        </button>
+                    </div>
 
-                    <div class="stat-card">
-                        <div class="stat-icon">⏳</div>
-                        <div class="stat-info">
-                            <h3 id="pendingOrders">0</h3>
-                            <p>طلبات قيد الانتظار</p>
+                    <div class="poster-info">
+                        <h4>معلومات البوستر:</h4>
+                        <div id="posterDetails">
+                            <p>لا يوجد بوستر حالياً</p>
                         </div>
                     </div>
                 </div>
             </section>
-        </main>
-    </div>
 
-    <!-- نافذة إضافة/تعديل منتج -->
-    <div id="productModal" class="modal">
-        <div class="modal-content">
+            <!-- قسم الإحصائيات -->
+            <section id="statisticsSection" class="admin-section">
+                <div class="section-header">
+                    <h2>📊 الإحصائيات</h2>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <h3 id="totalProducts">0</h3>
+                            <p>إجمالي المنتجات</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-info">
+                            <h3 id="totalOrders">0</h3>
+                            <p>إجمالي الطلبات</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <h3 id="totalRevenue">0 جنيه</h3>
+                            <p>إجمالي المبيعات</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3 id="totalCustomers">0</h3>
+                            <p>العملاء</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-charts">
+                    <div class="chart-card">
+                        <h4>أكثر المنتجات مبيعاً</h4>
+                        <div id="topProducts" class="top-products-list">
+                            <p>لا توجد بيانات مبيعات بعد</p>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h4>الطلبات الأخيرة</h4>
+                        <div id="recentOrders" class="recent-orders-list">
+                            <p>لا توجد طلبات حديثة</p>
+                        </div>
+                    </div>
+                </div>
+            </section>dal-content">
             <div class="modal-header">
                 <h3 id="modalTitle">إضافة منتج جديد</h3>
                 <button id="closeModal" class="close-btn">✕</button>
@@ -209,8 +264,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="productImage">رابط الصورة:</label>
-                    <input type="url" id="productImage" placeholder="https://example.com/image.jpg">
+                    <label for="productImage">الصورة:</label>
+                    <input type="url" id="productImage" placeholder="https://example.com/image.jpg" style="margin-bottom: .5rem;">
+                    <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+                        <input type="file" id="productImageFile" accept="image/*">
+                        <button type="button" id="uploadImageBtn" class="save-btn" style="padding:.5rem 1rem;">رفع الصورة</button>
+                        <small id="imageUploadStatus" style="color: var(--gray-600);"></small>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -267,6 +327,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
     <script>
         // Initialize Firebase for Admin
@@ -274,7 +335,7 @@
             apiKey: "AIzaSyBsOmPIoAbsPTI8WwX8TrnTY01hv6UhcX8",
             authDomain: "pharmacy-admin-2ff91.firebaseapp.com",
             projectId: "pharmacy-admin-2ff91",
-            storageBucket: "pharmacy-admin-2ff91.firebasestorage.app",
+            storageBucket: "pharmacy-admin-2ff91.appspot.com",
             messagingSenderId: "809512854347",
             appId: "1:809512854347:web:a7294d8e77c7f138f83ece"
         };
@@ -283,7 +344,8 @@
         const db = firebase.firestore();
     </script>
     
+    <!-- Image Upload API -->
+    <script src="image-api.js"></script>
     <script src="admin.js"></script>
 </body>
-
 </html>

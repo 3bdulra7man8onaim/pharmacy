@@ -1,0 +1,10 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      // TEMP: open. Secure later with auth.
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

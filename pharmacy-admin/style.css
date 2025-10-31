@@ -3083,4 +3083,191 @@ body {
         flex-direction: column;
         gap: 0.25rem;
     }
+}/* =
+==== POSTER MANAGEMENT STYLES ===== */
+.poster-management {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.poster-upload-area {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.poster-preview {
+    width: 100%;
+    min-height: 300px;
+    border: 2px dashed var(--gray-300);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gray-50);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.poster-preview:hover {
+    border-color: var(--primary-color);
+    background: var(--primary-50);
+}
+
+.poster-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.upload-placeholder {
+    text-align: center;
+    color: var(--gray-500);
+}
+
+.upload-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.upload-placeholder h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.upload-placeholder p {
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+}
+
+.upload-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.3s ease;
+}
+
+.upload-btn:hover {
+    background: var(--primary-600);
+}
+
+.poster-controls {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.poster-info {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    height: fit-content;
+}
+
+.poster-info h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.poster-info p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* ===== ENHANCED STATISTICS STYLES ===== */
+.stats-charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.chart-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.chart-card h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.top-products-list,
+.recent-orders-list {
+    color: var(--gray-600);
+    font-size: 0.9rem;
+}
+
+.product-item,
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.product-item:last-child,
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.product-name,
+.order-customer {
+    font-weight: 500;
+}
+
+.product-sales,
+.order-amount {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .poster-management {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stats-charts {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .poster-controls {
+        flex-direction: column;
+    }
+}
+
+/* Dark Mode Support */
+.dark-mode .poster-upload-area,
+.dark-mode .poster-info,
+.dark-mode .chart-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.dark-mode .poster-preview {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.dark-mode .upload-placeholder {
+    color: var(--dark-text-secondary);
 }
