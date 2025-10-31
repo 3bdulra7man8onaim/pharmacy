@@ -235,13 +235,23 @@ async function uploadProductImage(file, onStatus) {
 
 // Login Management
 async function handleLogin(event) {
+    console.log('🔐 handleLogin called!');
     event.preventDefault();
     
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
     
-    console.log('Login attempt:', { username, password: password ? 'entered' : 'empty' });
-    console.log('Expected:', { username: adminStore.credentials.username, password: adminStore.credentials.password });
+    if (!usernameInput || !passwordInput) {
+        console.error('❌ Login inputs not found!');
+        alert('خطأ: لم يتم العثور على حقول تسجيل الدخول');
+        return;
+    }
+    
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
+    
+    console.log('📝 Login attempt:', { username, password: password ? 'entered' : 'empty' });
+    console.log('🔍 Expected:', { username: adminStore.credentials.username, password: adminStore.credentials.password });
     
     if (adminStore.login(username, password)) {
         document.getElementById('loginScreen').style.display = 'none';
@@ -688,10 +698,25 @@ function listenForOrders() {
 
 // ===== EVENT LISTENERS =====
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOM loaded, initializing admin panel...');
+    
     // Login form
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
+        console.log('✅ Login form found, adding event listener');
         loginForm.addEventListener('submit', handleLogin);
+    } else {
+        console.error('❌ Login form not found!');
+    }
+    
+    // Backup: Add click listener to login button
+    const loginBtn = document.querySelector('.login-btn');
+    if (loginBtn) {
+        console.log('✅ Login button found, adding backup listener');
+        loginBtn.addEventListener('click', (e) => {
+            console.log('🔘 Login button clicked');
+            handleLogin(e);
+        });
     }
     
     // Logout button
