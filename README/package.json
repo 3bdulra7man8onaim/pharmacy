@@ -1,0 +1,33 @@
+{
+  "name": "pharmacy-hisham",
+  "version": "1.0.0",
+  "description": "نظام إدارة صيدلية هشام - نظام متكامل لإدارة الصيدلية",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve . --port 3000",
+    "build": "echo 'No build step required for vanilla JS'",
+    "deploy": "firebase deploy"
+  },
+  "keywords": [
+    "pharmacy",
+    "صيدلية",
+    "firebase",
+    "javascript",
+    "html",
+    "css"
+  ],
+  "author": "Kiro AI",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "pharmacy-hisham-system"
+  },
+  "homepage": ".",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

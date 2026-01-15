@@ -3,7 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>لوحة التحكم - صيدلية هشام</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -49,7 +52,7 @@
                 </div>
 
                 <div class="nav-right">
-                    <a href="index.html" class="control-btn" title="العودة لصفحة العميل" target="_blank">
+                    <a href="https://hisham-pharmacy.web.app/" class="control-btn" title="صفحة العميل" target="_blank">
                         <i class="fas fa-external-link-alt"></i>
                         صفحة العميل
                     </a>
@@ -80,6 +83,9 @@
 
                 <!-- جدول المنتجات -->
                 <div class="table-container">
+                    <div class="table-scroll-hint mobile-show" style="display: none; text-align: center; padding: 0.5rem; background: var(--blue-50); color: var(--blue-700); font-size: var(--font-size-sm); border-radius: var(--border-radius); margin-bottom: 1rem;">
+                        <i class="fas fa-hand-point-left"></i> اسحب الجدول يميناً ويساراً 
+                    </div>
                     <table id="productsTable" class="admin-table">
                         <thead>
                             <tr>
@@ -125,7 +131,7 @@
                 </div>
 
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <div class="stat-card primary">
                         <div class="stat-icon">📦</div>
                         <div class="stat-info">
                             <h3 id="totalProducts">0</h3>
@@ -133,92 +139,101 @@
                         </div>
                     </div>
 
-                    <div class="stat-card">
-                        <div class="stat-icon">📋</div>
-                        <div class="stat-info">
-                            <h3 id="totalOrders">0</h3>
-                            <p>إجمالي الطلبات</p>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
+                    <div class="stat-card success">
                         <div class="stat-icon">✅</div>
                         <div class="stat-info">
-                            <h3 id="deliveredOrders">0</h3>
-                            <p>طلبات مكتملة</p>
+                            <h3 id="availableProducts">0</h3>
+                            <p>منتجات متاحة</p>
                         </div>
                     </div>
-="btn btn-danger" style="display: none;">
-                            <i class="fas fa-trash"></i>
-                            حذف البوستر
-                        </button>
+
+                    <div class="stat-card warning">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-info">
+                            <h3 id="unavailableProducts">0</h3>
+                            <p>منتجات غير متاحة</p>
+                        </div>
                     </div>
 
-                    <div class="poster-info">
-                        <h4>معلومات البوستر:</h4>
-                        <div id="posterDetails">
-                            <p>لا يوجد بوستر حالياً</p>
+                    <div class="stat-card info">
+                        <div class="stat-icon">🆕</div>
+                        <div class="stat-info">
+                            <h3 id="newProducts">0</h3>
+                            <p>منتجات جديدة</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card purple">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-info">
+                            <h3 id="totalCategories">0</h3>
+                            <p>عدد التصنيفات</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card money">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <h3 id="totalValue">0 جنيه</h3>
+                            <p>قيمة المخزون</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card price">
+                        <div class="stat-icon">💵</div>
+                        <div class="stat-info">
+                            <h3 id="avgPrice">0 جنيه</h3>
+                            <p>متوسط سعر المنتج</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card expensive">
+                        <div class="stat-icon">💎</div>
+                        <div class="stat-info">
+                            <h3 id="mostExpensive">0 جنيه</h3>
+                            <p>أغلى منتج</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card cheap">
+                        <div class="stat-icon">🏷️</div>
+                        <div class="stat-info">
+                            <h3 id="cheapest">0 جنيه</h3>
+                            <p>أرخص منتج</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card views">
+                        <div class="stat-icon">👁️</div>
+                        <div class="stat-info">
+                            <h3 id="totalViews">0</h3>
+                            <p>مشاهدات الموقع</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card users">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3 id="totalUsers">0</h3>
+                            <p>عدد الزوار</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card time">
+                        <div class="stat-icon">⏰</div>
+                        <div class="stat-info">
+                            <h3 id="lastUpdate">--</h3>
+                            <p>آخر تحديث</p>
                         </div>
                     </div>
                 </div>
             </section>
+        </main>
+    </div>
 
-            <!-- قسم الإحصائيات -->
-            <section id="statisticsSection" class="admin-section">
-                <div class="section-header">
-                    <h2>📊 الإحصائيات</h2>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">📦</div>
-                        <div class="stat-info">
-                            <h3 id="totalProducts">0</h3>
-                            <p>إجمالي المنتجات</p>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon">📋</div>
-                        <div class="stat-info">
-                            <h3 id="totalOrders">0</h3>
-                            <p>إجمالي الطلبات</p>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon">💰</div>
-                        <div class="stat-info">
-                            <h3 id="totalRevenue">0 جنيه</h3>
-                            <p>إجمالي المبيعات</p>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon">👥</div>
-                        <div class="stat-info">
-                            <h3 id="totalCustomers">0</h3>
-                            <p>العملاء</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stats-charts">
-                    <div class="chart-card">
-                        <h4>أكثر المنتجات مبيعاً</h4>
-                        <div id="topProducts" class="top-products-list">
-                            <p>لا توجد بيانات مبيعات بعد</p>
-                        </div>
-                    </div>
-
-                    <div class="chart-card">
-                        <h4>الطلبات الأخيرة</h4>
-                        <div id="recentOrders" class="recent-orders-list">
-                            <p>لا توجد طلبات حديثة</p>
-                        </div>
-                    </div>
-                </div>
-            </section>dal-content">
+    <!-- نافذة إضافة/تعديل منتج -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modalTitle">إضافة منتج جديد</h3>
                 <button id="closeModal" class="close-btn">✕</button>
@@ -242,16 +257,36 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="productCategory">التصنيف:</label>
-                        <select id="productCategory" required>
-                            <option value="">اختر التصنيف</option>
-                            <option value="painkillers">مسكنات</option>
-                            <option value="vitamins">فيتامينات</option>
-                            <option value="supplements">مكملات غذائية</option>
-                            <option value="cold">أدوية البرد</option>
-                            <option value="baby">منتجات الأطفال</option>
-                            <option value="skincare">العناية الشخصية</option>
-                            <option value="other">أخرى</option>
-                        </select>
+                        <div class="category-search-wrapper">
+                            <input type="text" id="categorySearch" placeholder="ابحث عن تصنيف..." class="category-search-input">
+                            <select id="productCategory" required size="6" class="category-select-searchable">
+                                <option value="">اختر التصنيف</option>
+                                <option value="painkillers">مسكنات</option>
+                                <option value="antibiotics">مضادات حيوية</option>
+                                <option value="vitamins">فيتامينات</option>
+                                <option value="supplements">مكملات غذائية</option>
+                                <option value="cold-flu">برد وإنفلونزا</option>
+                                <option value="digestive">جهاز هضمي</option>
+                                <option value="heart">قلب وأوعية</option>
+                                <option value="diabetes">سكري</option>
+                                <option value="pressure">ضغط دم</option>
+                                <option value="respiratory">جهاز تنفسي</option>
+                                <option value="allergy">حساسية</option>
+                                <option value="skincare">عناية بالبشرة</option>
+                                <option value="haircare">عناية بالشعر</option>
+                                <option value="dental">عناية بالأسنان</option>
+                                <option value="baby">منتجات أطفال</option>
+                                <option value="women">صحة المرأة</option>
+                                <option value="men">صحة الرجل</option>
+                                <option value="elderly">كبار السن</option>
+                                <option value="herbs">أعشاب طبيعية</option>
+                                <option value="medical-devices">أجهزة طبية</option>
+                                <option value="first-aid">إسعافات أولية</option>
+                                <option value="eye-care">عناية بالعين</option>
+                                <option value="ear-care">عناية بالأذن</option>
+                                <option value="sexual-health">صحة جنسية</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -266,10 +301,13 @@
                 <div class="form-group">
                     <label for="productImage">الصورة:</label>
                     <input type="url" id="productImage" placeholder="https://example.com/image.jpg" style="margin-bottom: .5rem;">
-                    <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
-                        <input type="file" id="productImageFile" accept="image/*">
-                        <button type="button" id="uploadImageBtn" class="save-btn" style="padding:.5rem 1rem;">رفع الصورة</button>
-                        <small id="imageUploadStatus" style="color: var(--gray-600);"></small>
+                    <div class="image-upload-container">
+                        <input type="file" id="productImageFile" accept="image/*" class="file-input">
+                        <button type="button" id="uploadImageBtn" class="save-btn upload-btn">
+                            <i class="fas fa-upload"></i>
+                            <span>رفع الصورة</span>
+                        </button>
+                        <small id="imageUploadStatus" class="upload-status"></small>
                     </div>
                 </div>
 
@@ -343,9 +381,50 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
     </script>
+
+    <footer class="developer-footer">
+        <div class="developer-card">
+            <div class="brand-row">
+                <div class="brand-left">
+                    <div class="logo-sigil">
+                        <img src="https://i.ibb.co/PsqC4pcv/Screen-Shot-2025-10-27-at-1-03-26-PM.png" alt="AG">
+                    </div>
+                    <div class="name-block">
+                        <div class="role">DEVELOPER &amp; DESIGNER</div>
+                        <div class="fullname">Abdulrahman Ghonaim</div>
+                    </div>
+                </div>
+
+                <div class="socials">
+                    <a href="https://www.instagram.com/3bdulra7man_8onaim/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+
+                    <a href="https://github.com/3bdulra7man8onaim" target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="social-github">
+                        <i class="fab fa-github"></i>
+                    </a>
+
+                    <a href="https://wa.me/201069625861" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="social-whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+
+                    <a href="https://www.facebook.com/profile.php?id=61566604275272" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="social-facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="dev-footer-bottom">
+                <div class="developed">
+                    <span>Developed by</span>
+                    <strong>Abdulrahman Ghonaim</strong>
+                </div>
+                <div class="meta">واتساب: 01069625861</div>
+            </div>
+        </div>
+    </footer>
     
-    <!-- Image Upload API -->
-    <script src="image-api.js"></script>
     <script src="admin.js"></script>
 </body>
+
 </html>

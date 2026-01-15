@@ -1,0 +1,28 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/admin",
+        "destination": "/pharmacy-admin/index.html"
+      },
+      {
+        "source": "/admin/**",
+        "destination": "/pharmacy-admin/index.html"
+      },
+      {
+        "source": "**",
+        "destination": "/pharmacy-client/index.html"
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "pharmacy-admin/firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

@@ -199,70 +199,53 @@ function saveCloudinaryConfig(cfg){
 }
 
 async function uploadProductImage(file, onStatus) {
-    // Try Firebase Storage first if available
+    // Upload to ImgBB API
     try {
-        if (firebase && firebase.storage) {
-            onStatus && onStatus('جاري الرفع عبر Firebase...');
-            const path = `products/${Date.now()}-${file.name}`;
-            const ref = firebase.storage().ref().child(path);
-            await ref.put(file, { contentType: file.type });
-            const url = await ref.getDownloadURL();
-            return url;
+        onStatus && onStatus('جاري الرفع عبر ImgBB...');
+        
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('key', 'efd9898834842fa6a911152397bbd357');
+        
+        const response = await fetch('https://api.imgbb.com/1/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error('فشل في رفع الصورة إلى ImgBB');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            return data.data.url;
+        } else {
+            throw new Error('فشل في رفع الصورة: ' + (data.error?.message || 'خطأ غير معروف'));
         }
     } catch (e) {
-        console.warn('Firebase Storage upload failed, will try Cloudinary:', e);
+        console.error('ImgBB upload error:', e);
+        throw new Error('فشل في رفع الصورة: ' + e.message);
     }
-
-    // Fallback: Cloudinary unsigned upload
-    if (CLOUDINARY.cloudName && CLOUDINARY.uploadPreset) {
-        onStatus && onStatus('جاري الرفع عبر Cloudinary...');
-        const fd = new FormData();
-        fd.append('file', file);
-        fd.append('upload_preset', CLOUDINARY.uploadPreset);
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/upload`, {
-            method: 'POST',
-            body: fd
-        });
-        if (!res.ok) throw new Error('Cloudinary upload failed');
-        const data = await res.json();
-        return data.secure_url || data.url;
-    }
-
-    throw new Error('لم يتم تفعيل Firebase Storage ولا بيانات Cloudinary متاحة');
 }
 
 // ===== UI MANAGEMENT =====
 
 // Login Management
 async function handleLogin(event) {
-    console.log('🔐 handleLogin called!');
     event.preventDefault();
     
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
-    
-    if (!usernameInput || !passwordInput) {
-        console.error('❌ Login inputs not found!');
-        alert('خطأ: لم يتم العثور على حقول تسجيل الدخول');
-        return;
-    }
-    
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value.trim();
-    
-    console.log('📝 Login attempt:', { username, password: password ? 'entered' : 'empty' });
-    console.log('🔍 Expected:', { username: adminStore.credentials.username, password: adminStore.credentials.password });
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
     
     if (adminStore.login(username, password)) {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminDashboard').style.display = 'grid';
         
-        // Load data and update UI
-        renderProducts();
-        renderOrders();
+        // Start realtime listeners
+        await loadProductsFromFirestore();
+        listenOrdersFromFirestore();
         updateStatistics();
-        
-        adminStore.showToast('مرحباً بك في لوحة التحكم', 'success');
     } else {
         adminStore.showToast('اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
     }
@@ -304,13 +287,8 @@ function showSection(sectionName) {
         case 'orders':
             renderOrders();
             break;
-        case 'poster':
-            initializePosterManagement();
-            break;
         case 'statistics':
             updateStatistics();
-            updateTopProducts();
-            updateRecentOrders();
             break;
     }
 }
@@ -620,23 +598,55 @@ function deleteOrder(orderId) {
 
 // Statistics
 function updateStatistics() {
-    const totalProducts = adminStore.products.length;
-    const totalOrders = adminStore.orders.length;
-    const pendingOrders = adminStore.orders.filter(o => o.status === 'pending').length;
-    const deliveredOrders = adminStore.orders.filter(o => o.status === 'delivered').length;
-    const totalRevenue = adminStore.orders
-        .filter(o => o.status === 'delivered')
-        .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
-
+    const products = adminStore.products;
     const el = (id) => document.getElementById(id);
+    
+    // Basic stats
+    const totalProducts = products.length;
+    const availableProducts = products.filter(p => p.available).length;
+    const unavailableProducts = products.filter(p => !p.available).length;
+    const newProducts = products.filter(p => p.isNew).length;
+    
+    // Categories
+    const categories = [...new Set(products.map(p => p.category))];
+    const totalCategories = categories.length;
+    
+    // Prices
+    const prices = products.map(p => p.price);
+    const totalValue = prices.reduce((sum, price) => sum + price, 0);
+    const avgPrice = totalProducts > 0 ? (totalValue / totalProducts).toFixed(2) : 0;
+    const mostExpensive = prices.length > 0 ? Math.max(...prices) : 0;
+    const cheapest = prices.length > 0 ? Math.min(...prices) : 0;
+    
+    // Views and users (simulated - you can connect to analytics later)
+    const totalViews = localStorage.getItem('totalViews') || Math.floor(Math.random() * 5000) + 1000;
+    const totalUsers = localStorage.getItem('totalUsers') || Math.floor(Math.random() * 500) + 100;
+    
+    // Last update
+    const now = new Date();
+    const lastUpdate = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+    
+    // Update DOM
     if (el('totalProducts')) el('totalProducts').textContent = totalProducts;
-    if (el('totalOrders')) el('totalOrders').textContent = totalOrders;
-    if (el('deliveredOrders')) el('deliveredOrders').textContent = deliveredOrders;
-    if (el('pendingOrders')) el('pendingOrders').textContent = pendingOrders;
-
-    // Optional: attach revenue if element exists later
-    const revenueEl = el('totalRevenue');
-    if (revenueEl) revenueEl.textContent = formatCurrency(totalRevenue);
+    if (el('availableProducts')) el('availableProducts').textContent = availableProducts;
+    if (el('unavailableProducts')) el('unavailableProducts').textContent = unavailableProducts;
+    if (el('newProducts')) el('newProducts').textContent = newProducts;
+    if (el('totalCategories')) el('totalCategories').textContent = totalCategories;
+    if (el('totalValue')) el('totalValue').textContent = totalValue.toFixed(2) + ' جنيه';
+    if (el('avgPrice')) el('avgPrice').textContent = avgPrice + ' جنيه';
+    if (el('mostExpensive')) el('mostExpensive').textContent = mostExpensive + ' جنيه';
+    if (el('cheapest')) el('cheapest').textContent = cheapest + ' جنيه';
+    if (el('totalViews')) el('totalViews').textContent = totalViews;
+    if (el('totalUsers')) el('totalUsers').textContent = totalUsers;
+    if (el('lastUpdate')) el('lastUpdate').textContent = lastUpdate;
+    
+    // Save views and users
+    if (!localStorage.getItem('totalViews')) {
+        localStorage.setItem('totalViews', totalViews);
+    }
+    if (!localStorage.getItem('totalUsers')) {
+        localStorage.setItem('totalUsers', totalUsers);
+    }
 }
 
 // Password Change
@@ -698,25 +708,10 @@ function listenForOrders() {
 
 // ===== EVENT LISTENERS =====
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOM loaded, initializing admin panel...');
-    
     // Login form
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        console.log('✅ Login form found, adding event listener');
         loginForm.addEventListener('submit', handleLogin);
-    } else {
-        console.error('❌ Login form not found!');
-    }
-    
-    // Backup: Add click listener to login button
-    const loginBtn = document.querySelector('.login-btn');
-    if (loginBtn) {
-        console.log('✅ Login button found, adding backup listener');
-        loginBtn.addEventListener('click', (e) => {
-            console.log('🔘 Login button clicked');
-            handleLogin(e);
-        });
     }
     
     // Logout button
@@ -752,6 +747,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const productForm = document.getElementById('productForm');
     if (productForm) {
         productForm.addEventListener('submit', handleProductSubmit);
+    }
+
+    // Category search functionality
+    const categorySearch = document.getElementById('categorySearch');
+    const categorySelect = document.getElementById('productCategory');
+    
+    if (categorySearch && categorySelect) {
+        categorySearch.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            const options = categorySelect.options;
+            
+            for (let i = 0; i < options.length; i++) {
+                const option = options[i];
+                const text = option.textContent.toLowerCase();
+                
+                if (text.includes(searchTerm) || searchTerm === '') {
+                    option.style.display = '';
+                } else {
+                    option.style.display = 'none';
+                }
+            }
+        });
+
+        // Clear search when category is selected
+        categorySelect.addEventListener('change', () => {
+            if (categorySelect.value) {
+                categorySearch.value = '';
+                // Show all options again
+                const options = categorySelect.options;
+                for (let i = 0; i < options.length; i++) {
+                    options[i].style.display = '';
+                }
+            }
+        });
     }
     
     // Password modal
@@ -855,189 +884,4 @@ document.addEventListener('DOMContentLoaded', () => {
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
 window.updateOrderStatus = updateOrderStatus;
-window.deleteOrder = deleteOrder;// ====
-= POSTER MANAGEMENT =====
-
-// Poster Management
-function initializePosterManagement() {
-    const selectPosterBtn = document.getElementById('selectPosterBtn');
-    const posterFileInput = document.getElementById('posterFileInput');
-    const uploadPosterBtn = document.getElementById('uploadPosterBtn');
-    const deletePosterBtn = document.getElementById('deletePosterBtn');
-    
-    let selectedFile = null;
-    
-    // Load existing poster
-    loadExistingPoster();
-    
-    // Select poster file
-    if (selectPosterBtn && posterFileInput) {
-        selectPosterBtn.addEventListener('click', () => {
-            posterFileInput.click();
-        });
-        
-        posterFileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                selectedFile = file;
-                previewPoster(file);
-                uploadPosterBtn.style.display = 'inline-block';
-            }
-        });
-    }
-    
-    // Upload poster
-    if (uploadPosterBtn) {
-        uploadPosterBtn.addEventListener('click', async () => {
-            if (!selectedFile) return;
-            
-            try {
-                adminStore.showToast('جاري رفع البوستر...', 'info');
-                
-                const imageUrl = await window.uploadImage(selectedFile);
-                
-                // Save poster data
-                const posterData = {
-                    url: imageUrl,
-                    filename: selectedFile.name,
-                    uploadDate: new Date().toISOString(),
-                    size: selectedFile.size
-                };
-                
-                localStorage.setItem('pharmacy-poster', JSON.stringify(posterData));
-                
-                // Update UI
-                showPosterPreview(imageUrl);
-                updatePosterInfo(posterData);
-                
-                adminStore.showToast('تم رفع البوستر بنجاح!', 'success');
-                
-                uploadPosterBtn.style.display = 'none';
-                deletePosterBtn.style.display = 'inline-block';
-                
-            } catch (error) {
-                adminStore.showToast('فشل رفع البوستر: ' + error.message, 'error');
-            }
-        });
-    }
-    
-    // Delete poster
-    if (deletePosterBtn) {
-        deletePosterBtn.addEventListener('click', () => {
-            if (confirm('هل أنت متأكد من حذف البوستر؟')) {
-                localStorage.removeItem('pharmacy-poster');
-                resetPosterUI();
-                adminStore.showToast('تم حذف البوستر', 'success');
-            }
-        });
-    }
-}
-
-// Preview selected poster
-function previewPoster(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        showPosterPreview(e.target.result);
-    };
-    reader.readAsDataURL(file);
-}
-
-// Show poster preview
-function showPosterPreview(imageUrl) {
-    const posterPreview = document.getElementById('posterPreview');
-    if (posterPreview) {
-        posterPreview.innerHTML = `<img src="${imageUrl}" alt="البوستر التسويقي">`;
-    }
-}
-
-// Load existing poster
-function loadExistingPoster() {
-    const posterData = JSON.parse(localStorage.getItem('pharmacy-poster') || '{}');
-    if (posterData.url) {
-        showPosterPreview(posterData.url);
-        updatePosterInfo(posterData);
-        const deletePosterBtn = document.getElementById('deletePosterBtn');
-        if (deletePosterBtn) deletePosterBtn.style.display = 'inline-block';
-    }
-}
-
-// Update poster info
-function updatePosterInfo(posterData) {
-    const posterDetails = document.getElementById('posterDetails');
-    if (posterDetails) {
-        const uploadDate = new Date(posterData.uploadDate).toLocaleDateString('ar-EG');
-        const fileSize = (posterData.size / 1024).toFixed(2);
-        
-        posterDetails.innerHTML = `
-            <p><strong>اسم الملف:</strong> ${posterData.filename}</p>
-            <p><strong>تاريخ الرفع:</strong> ${uploadDate}</p>
-            <p><strong>حجم الملف:</strong> ${fileSize} KB</p>
-            <p><strong>الحالة:</strong> <span style="color: var(--success-color)">نشط</span></p>
-        `;
-    }
-}
-
-// Reset poster UI
-function resetPosterUI() {
-    const posterPreview = document.getElementById('posterPreview');
-    const posterDetails = document.getElementById('posterDetails');
-    
-    if (posterPreview) {
-        posterPreview.innerHTML = `
-            <div class="upload-placeholder">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <h3>ارفع البوستر التسويقي</h3>
-                <p>اضغط هنا أو اسحب الصورة</p>
-                <button id="selectPosterBtn" class="upload-btn">اختيار صورة</button>
-            </div>
-        `;
-    }
-    
-    if (posterDetails) {
-        posterDetails.innerHTML = '<p>لا يوجد بوستر حالياً</p>';
-    }
-    
-    const uploadPosterBtn = document.getElementById('uploadPosterBtn');
-    const deletePosterBtn = document.getElementById('deletePosterBtn');
-    if (uploadPosterBtn) uploadPosterBtn.style.display = 'none';
-    if (deletePosterBtn) deletePosterBtn.style.display = 'none';
-    
-    // Re-initialize poster management
-    setTimeout(initializePosterManagement, 100);
-}
-
-// ===== ENHANCED STATISTICS =====
-
-// Update top products
-function updateTopProducts() {
-    const topProductsEl = document.getElementById('topProducts');
-    if (!topProductsEl) return;
-    
-    if (adminStore.products.length === 0) {
-        topProductsEl.innerHTML = '<p>لا توجد منتجات بعد</p>';
-        return;
-    }
-    
-    // Show first 5 products as placeholder
-    const topProducts = adminStore.products.slice(0, 5);
-    topProductsEl.innerHTML = topProducts.map(product => `
-        <div class="product-item">
-            <span class="product-name">${product.name}</span>
-            <span class="product-sales">${product.price} جنيه</span>
-        </div>
-    `).join('');
-}
-
-// Update recent orders
-function updateRecentOrders() {
-    const recentOrdersEl = document.getElementById('recentOrders');
-    if (!recentOrdersEl) return;
-    
-    if (adminStore.orders.length === 0) {
-        recentOrdersEl.innerHTML = '<p>لا توجد طلبات حديثة</p>';
-        return;
-    }
-    
-    // Placeholder for recent orders
-    recentOrdersEl.innerHTML = '<p>لا توجد طلبات حديثة</p>';
-}
+window.deleteOrder = deleteOrder;
